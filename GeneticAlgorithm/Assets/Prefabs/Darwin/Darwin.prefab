@@ -130,7 +130,7 @@ MonoBehaviour:
   generationSize: 50
   spawnTransform: {fileID: 4200730031919538243}
   targetTransform: {fileID: 7671341109884683879}
-  mutabilityProbability: 0.03
+  mutabilityProbability: 0.01
 --- !u!1 &6226667648890578551
 GameObject:
   m_ObjectHideFlags: 0
