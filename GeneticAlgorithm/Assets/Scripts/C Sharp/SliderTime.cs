@@ -11,6 +11,6 @@ public class SliderTime : MonoBehaviour
     public void OnValueChanged(float value)
     {
         Time.timeScale = value;
-        timeScaleNumber.text = Time.timeScale.ToString();
+        timeScaleNumber.text = Time.timeScale.ToString("F2");
     }
 }

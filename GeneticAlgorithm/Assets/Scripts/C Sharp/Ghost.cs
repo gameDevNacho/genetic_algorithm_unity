@@ -5,153 +5,155 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Ghost : MonoBehaviour
 {
-    public delegate void GhostDead();
+  public delegate void GhostDead();
 
-    [Header("Genes")]
-    [SerializeField]
-    private int genesSize;
-    [SerializeField]
-    private float minTimeImpulse;
-    [SerializeField]
-    private float maxTimeImpulse;
-    [Header("Behaviour")]
-    [SerializeField]
-    private float rotationSpeed;
-    [SerializeField]
-    private float forceMagnitude;
-    [SerializeField]
-    private float timeToDie;
+  [Header("Genes")]
+  [SerializeField]
+  private int genesSize;
+  [SerializeField]
+  private float minTimeImpulse;
+  [SerializeField]
+  private float maxTimeImpulse;
 
-    private GhostGenes genes;
+  [Header("Behaviour")]
+  [SerializeField]
+  private float rotationSpeed;
+  [SerializeField]
+  private float forceMagnitude;
+  [SerializeField]
+  private float timeToDie;
 
-    private Rigidbody2D rb2D;
+  private GhostGenes genes;
 
-    private float currentAngle;
-    private Vector2 directionImpulse;
+  private Rigidbody2D rb2D;
 
-    private float timePassed;
-    private float targetTime;
+  private float currentAngle;
+  private Vector2 directionImpulse;
 
-    private float timeWaitingToDie;
+  private float timePassed;
+  private float targetTime;
 
-    private int currentGeneIndex;
+  private float timeWaitingToDie;
 
-    private bool dying;
-    private bool dead;
+  private int currentGeneIndex;
 
-    public GhostDead GhostDeadDelegate;
+  private bool dying;
+  private bool dead;
 
-    private void Awake()
+  public GhostDead GhostDeadDelegate;
+
+  private void Awake()
+  {
+    InitializeGhost();
+  }
+
+  public void InitializeGhost()
+  {
+    genes = new GhostGenes(genesSize, minTimeImpulse, maxTimeImpulse);
+
+    rb2D = GetComponent<Rigidbody2D>();
+
+    ResetGhost();
+  }
+
+  public void ResetGhost()
+  {
+    currentAngle = 0;
+    directionImpulse = new Vector2();
+
+    timePassed = 0;
+    targetTime = genes.TimesForImpulses[0];
+    
+    timeWaitingToDie = 0;
+
+    currentGeneIndex = 0;
+
+    dying = false;
+    dead = false;
+  }
+
+  private void FixedUpdate()
+  {
+    if (!dying && !dead)
     {
-        InitializeGhost();
+      RotateImpulseDirection();
+      Move();
     }
 
-    public void InitializeGhost()
+    else if (dying && !dead)
     {
-        genes = new GhostGenes(genesSize, minTimeImpulse, maxTimeImpulse);
+      WaitAndDie();
+    }
+  }
 
-        rb2D = GetComponent<Rigidbody2D>();
+  private void RotateImpulseDirection()
+  {
+    currentAngle += rotationSpeed * Time.deltaTime;
 
-        ResetGhost();
+    if (currentAngle >= 360f)
+    {
+      currentAngle -= 360f;
     }
 
-    public void ResetGhost()
+    float currentAngleRadians = Mathf.Deg2Rad * currentAngle;
+
+    directionImpulse.x = Mathf.Cos(currentAngleRadians) * transform.up.x - Mathf.Sin(currentAngleRadians) * transform.up.y;
+    directionImpulse.y = Mathf.Sin(currentAngleRadians) * transform.up.x - Mathf.Cos(currentAngleRadians) * transform.up.y;
+
+    directionImpulse.Normalize();
+
+    Debug.DrawRay(transform.position, directionImpulse * forceMagnitude, Color.red);
+  }
+
+  private void Move()
+  {
+    timePassed += Time.deltaTime;
+
+    if (timePassed >= targetTime)
     {
-        currentAngle = 0;
-        directionImpulse = new Vector2();
+      timePassed = 0;
 
-        timePassed = 0;
-        targetTime = genes.TimesForImpulses[0];
+      rb2D.AddForce(directionImpulse * forceMagnitude, ForceMode2D.Impulse);
 
-        timeWaitingToDie = 0;
+      if (++currentGeneIndex < genes.TimesForImpulses.Length)
+      {
+        targetTime = genes.TimesForImpulses[currentGeneIndex];
+       // rotationSpeed = genes.TurnSpeed[currentGeneIndex];
+      }
 
-        currentGeneIndex = 0;
-
-        dying = false;
-        dead = false;
+      else
+      {
+        dying = true;
+      }
     }
+  }
 
-    private void FixedUpdate()
+  private void WaitAndDie()
+  {
+    timeWaitingToDie += Time.deltaTime;
+
+    if (timeWaitingToDie >= timeToDie)
     {
-        if(!dying && !dead)
-        {
-            RotateImpulseDirection();
-            Move();
-        }
+      dead = true;
 
-        else if(dying && !dead)
-        {
-            WaitAndDie();
-        }
+      rb2D.velocity = Vector2.zero;
+
+      GhostDeadDelegate.Invoke();
     }
+  }
 
-    private void RotateImpulseDirection()
-    {
-        currentAngle += rotationSpeed * Time.deltaTime;
+  public GhostGenes GetGenes()
+  {
+    return genes;
+  }
 
-        if (currentAngle >= 360f)
-        {
-            currentAngle -= 360f;
-        }
+  public float GetMinTimeImpulse()
+  {
+    return minTimeImpulse;
+  }
 
-        float currentAngleRadians = Mathf.Deg2Rad * currentAngle;
-
-        directionImpulse.x = Mathf.Cos(currentAngleRadians) * transform.up.x - Mathf.Sin(currentAngleRadians) * transform.up.y;
-        directionImpulse.y = Mathf.Sin(currentAngleRadians) * transform.up.x - Mathf.Cos(currentAngleRadians) * transform.up.y;
-
-        directionImpulse.Normalize();
-
-        Debug.DrawRay(transform.position, directionImpulse * forceMagnitude, Color.red);
-    }
-
-    private void Move()
-    {
-        timePassed += Time.deltaTime;
-
-        if(timePassed >= targetTime)
-        {
-            timePassed = 0;
-
-            rb2D.AddForce(directionImpulse * forceMagnitude, ForceMode2D.Impulse);
-
-            if(++currentGeneIndex < genes.TimesForImpulses.Length)
-            {
-                targetTime = genes.TimesForImpulses[currentGeneIndex];
-            }
-            
-            else
-            {
-                dying = true;
-            }
-        }
-    }
-
-    private void WaitAndDie()
-    {
-        timeWaitingToDie += Time.deltaTime;
-
-        if(timeWaitingToDie >= timeToDie)
-        {
-            dead = true;
-
-            rb2D.velocity = Vector2.zero;
-
-            GhostDeadDelegate.Invoke();
-        }
-    }
-
-    public GhostGenes GetGenes()
-    {
-        return genes;
-    }
-
-    public float GetMinTimeImpulse()
-    {
-        return minTimeImpulse;
-    }
-
-    public float GetMaxTimeImpulse()
-    {
-        return maxTimeImpulse;
-    }
+  public float GetMaxTimeImpulse()
+  {
+    return maxTimeImpulse;
+  }
 }

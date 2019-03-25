@@ -41,3 +41,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Outlines
+    uniqueID: 1685453823
+    locked: 0
+  - name: Phantoms
+    uniqueID: 1934754205
+    locked: 0
+  - name: Firstplane
+    uniqueID: 3134067841
+    locked: 0

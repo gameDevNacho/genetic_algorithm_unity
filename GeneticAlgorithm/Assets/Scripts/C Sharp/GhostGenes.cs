@@ -4,25 +4,27 @@ using UnityEngine;
 
 public class GhostGenes
 {
-    public float[] TimesForImpulses { get; private set; }
+  public float[] TimesForImpulses { get; private set; }
+  
+  private float minTime;
+  private float maxTime;
 
-    private float minTime;
-    private float maxTime;
+  public GhostGenes(int size, float minTime, float maxTime)
+  {
+    TimesForImpulses = new float[size];
+    this.minTime = minTime;
+    this.maxTime = maxTime;
 
-    public GhostGenes(int size, float minTime, float maxTime)
+
+
+    RandomizeGenes();
+  }
+
+  private void RandomizeGenes()
+  {
+    for (int i = 0; i < TimesForImpulses.Length; i++)
     {
-        TimesForImpulses = new float[size];
-        this.minTime = minTime;
-        this.maxTime = maxTime;
-
-        RandomizeGenes();
+      TimesForImpulses[i] = UnityEngine.Random.Range(minTime, maxTime);
     }
-
-    private void RandomizeGenes()
-    {
-        for (int i = 0; i < TimesForImpulses.Length; i++)
-        {
-            TimesForImpulses[i] = UnityEngine.Random.Range(minTime, maxTime);
-        }
-    }
+  }
 }
