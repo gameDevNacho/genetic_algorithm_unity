@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Darwin : MonoBehaviour
 {
@@ -16,6 +17,10 @@ public class Darwin : MonoBehaviour
     private Transform targetTransform;
     [SerializeField]
     private float mutabilityProbability;
+    [SerializeField]
+    private Text generationNumberText;
+    [SerializeField]
+    private Text aptitudeNumberText;
 
     private Ghost[] generation;
     private int currentGeneration;
@@ -47,6 +52,8 @@ public class Darwin : MonoBehaviour
         targetPoint = targetTransform.position;
 
         CreateFirstGeneration();
+
+        generationNumberText.text = (currentGeneration + 1).ToString();
     }
 
     private void CreateFirstGeneration()
@@ -81,9 +88,31 @@ public class Darwin : MonoBehaviour
             generationAptitudeSum += generationAptitude[i];
         }
 
-        generationsRecords[currentGeneration++] = generationAptitudeSum / generationSize;
+        generationsRecords[currentGeneration] = generationAptitudeSum / generationSize;
 
-        Debug.Log(generationsRecords[currentGeneration - 1]);
+        aptitudeNumberText.text = generationsRecords[currentGeneration].ToString("F2");
+
+        if(currentGeneration > 0)
+        {
+            if(generationsRecords[currentGeneration - 1] > generationsRecords[currentGeneration])
+            {
+                aptitudeNumberText.color = new Color(1, 0, 0, 1);
+            }
+
+            else
+            {
+                aptitudeNumberText.color = new Color(0, 1, 0, 1);
+            }
+        }
+
+        else
+        {
+            aptitudeNumberText.color = new Color(0, 1, 0, 1);
+        }
+
+        ++currentGeneration;
+
+        generationNumberText.text = (currentGeneration + 1).ToString();
 
         BubbleSortGeneration(generationAptitude);
 
